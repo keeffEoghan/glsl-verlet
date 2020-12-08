@@ -6,7 +6,7 @@
  * @todo Use macro to repeat calculation in any dimension?
  *
  * @param {float|vec2|vec3} a Acceleration.
- * @param {float|vec2|vec3} p0 Last position.
+ * @param {float|vec2|vec3} p0 Past position.
  * @param {float|vec2|vec3} p1 Current position.
  * @param {float} dt0 Time elapsed in the last frame.
  * @param {float} dt1 Time elapsed in the current frame.
