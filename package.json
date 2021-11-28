@@ -1,6 +1,6 @@
 {
   "name": "@epok.tech/glsl-verlet",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "GLSL Verlet integration in 1-4 dimensions.",
   "repository": {
     "type": "git",

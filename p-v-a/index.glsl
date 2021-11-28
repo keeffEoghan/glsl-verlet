@@ -51,6 +51,12 @@ vec4 verlet(inout vec4 p, inout vec4 v, vec4 a, float dt0, float dt1) {
  * Verlet integration; using position, velocity, acceleration; 1-4 dimensions;
  * variable timestep; variable acceleration.
  * AKA: Velocity Verlet.
+ * Depends on a `update` implementation - defined externally, can be passed to
+ * this module using GLSLify's reference-passing feature upon `require`.
+ *
+ * @example
+ *     vec3 update(vec3 p0, vec3 p1, vec3 v, vec3 a, float dt0, float dt1) {...}
+ *     #pragma glslify: require('glsl-verlet/p-v-a', update=apply)
  *
  * @see "Velocity Verlet" on
  *     https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
@@ -63,7 +69,7 @@ vec4 verlet(inout vec4 p, inout vec4 v, vec4 a, float dt0, float dt1) {
  * @param {float|vec2|vec3|vec4} `a` Acceleration.
  * @param {float} `dt0` Time elapsed, past.
  * @param {float} `dt1` Time elapsed, now.
- * @param {int} `f` Flag, update acceleration via external `forces` callback.
+ * @param {int} `f` Flag, update acceleration via external `update` callback.
  *
  * @returns {float|vec2|vec3|vec4} The next position; the given position,
  *     velocity, and acceleration are also updated via `inout`.
@@ -72,7 +78,7 @@ vec4 verlet(inout vec4 p, inout vec4 v, vec4 a, float dt0, float dt1) {
 float verlet(inout float p, inout float v, inout float a, float dt0, float dt1,
         int f) {
     float p1 = verletP(p, v, a, dt0, dt1);
-    float a1 = forces(p, p1, v, a, dt0, dt1, f);
+    float a1 = update(p, p1, v, a, dt0, dt1, f);
 
     v = verletV(v, a, a1, dt1);
     a = a1;
@@ -83,7 +89,7 @@ float verlet(inout float p, inout float v, inout float a, float dt0, float dt1,
 vec2 verlet(inout vec2 p, inout vec2 v, inout vec2 a, float dt0, float dt1,
         int f) {
     vec2 p1 = verletP(p, v, a, dt0, dt1);
-    vec2 a1 = forces(p, p1, v, a, dt0, dt1, f);
+    vec2 a1 = update(p, p1, v, a, dt0, dt1, f);
 
     v = verletV(v, a, a1, dt1);
     a = a1;
@@ -94,7 +100,7 @@ vec2 verlet(inout vec2 p, inout vec2 v, inout vec2 a, float dt0, float dt1,
 vec3 verlet(inout vec3 p, inout vec3 v, inout vec3 a, float dt0, float dt1,
         int f) {
     vec3 p1 = verletP(p, v, a, dt0, dt1);
-    vec3 a1 = forces(p, p1, v, a, dt0, dt1, f);
+    vec3 a1 = update(p, p1, v, a, dt0, dt1, f);
 
     v = verletV(v, a, a1, dt1);
     a = a1;
@@ -105,7 +111,7 @@ vec3 verlet(inout vec3 p, inout vec3 v, inout vec3 a, float dt0, float dt1,
 vec4 verlet(inout vec4 p, inout vec4 v, inout vec4 a, float dt0, float dt1,
         int f) {
     vec4 p1 = verletP(p, v, a, dt0, dt1);
-    vec4 a1 = forces(p, p1, v, a, dt0, dt1, f);
+    vec4 a1 = update(p, p1, v, a, dt0, dt1, f);
 
     v = verletV(v, a, a1, dt1);
     a = a1;
@@ -150,6 +156,12 @@ vec4 verlet(inout vec4 p, inout vec4 v, vec4 a, float dt) {
  * Verlet integration; using position, velocity, acceleration; 1-4 dimensions;
  * constant timestep; variable acceleration.
  * AKA: Velocity Verlet.
+ * Depends on a `update` implementation - defined externally, can be passed to
+ * this module using GLSLify's reference-passing feature upon `require`.
+ *
+ * @example
+ *     vec3 update(vec3 p0, vec3 p1, vec3 v, vec3 a, float dt0, float dt1) {...}
+ *     #pragma glslify: require('glsl-verlet/p-v-a', update=apply)
  *
  * @see "Velocity Verlet" on
  *     https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
@@ -161,7 +173,7 @@ vec4 verlet(inout vec4 p, inout vec4 v, vec4 a, float dt) {
  * @param {float|vec2|vec3|vec4} `v` Velocity.
  * @param {float|vec2|vec3|vec4} `a` Acceleration.
  * @param {float} `dt` Time elapsed.
- * @param {int} `f` Flag, update acceleration via external `forces` callback.
+ * @param {int} `f` Flag, update acceleration via external `update` callback.
  *
  * @returns {float|vec2|vec3|vec4} The next position; the given position,
  *     velocity, and acceleration are also updated via `inout`.
@@ -184,14 +196,18 @@ vec4 verlet(inout vec4 p, inout vec4 v, inout vec4 a, float dt, int f) {
 }
 
 /**
- * Callback, apply forces to new acceleration.
+ * Callback, apply forces/impulses/etc to next acceleration.
  * Defined externally, can be passed to this module using GLSLify's
  * reference-passing feature upon `require`.
+ *
+ * @example
+ *     vec3 apply(vec3 p0, vec3 p1, vec3 v, vec3 a, float dt0, float dt1) {...}
+ *     #pragma glslify: require('glsl-verlet/p-v-a', update=apply)
  *
  * @see GLSLify "Passing references between modules"
  *     https://github.com/glslify/glslify#passing-references-between-modules
  *
- * @callback forces
+ * @callback update
  * @param {float|vec2|vec3|vec4} `p0` Position, past.
  * @param {float|vec2|vec3|vec4} `p1` Position, next.
  * @param {float|vec2|vec3|vec4} `v` Velocity.
@@ -202,9 +218,9 @@ vec4 verlet(inout vec4 p, inout vec4 v, inout vec4 a, float dt, int f) {
  *
  * @returns {float|vec2|vec3|vec4} The next acceleration.
  */
-float forces(float p0, float p1, float v, float a, float dt0, float dt1, int f);
-vec2 forces(vec2 p0, vec2 p1, vec2 v, vec2 a, float dt0, float dt1, int f);
-vec3 forces(vec3 p0, vec3 p1, vec3 v, vec3 a, float dt0, float dt1, int f);
-vec4 forces(vec4 p0, vec4 p1, vec4 v, vec4 a, float dt0, float dt1, int f);
+float update(float p0, float p1, float v, float a, float dt0, float dt1, int f);
+vec2 update(vec2 p0, vec2 p1, vec2 v, vec2 a, float dt0, float dt1, int f);
+vec3 update(vec3 p0, vec3 p1, vec3 v, vec3 a, float dt0, float dt1, int f);
+vec4 update(vec4 p0, vec4 p1, vec4 v, vec4 a, float dt0, float dt1, int f);
 
 #pragma glslify: export(verlet)
